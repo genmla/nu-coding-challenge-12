@@ -112,14 +112,17 @@ function prompting() {
                 });
             }
             if (response.action == 'View All Roles') {
-                const sql = `SELECT id, title AS Role, salary AS Salary, department_id as Department FROM roles`;
+                const sql = `SELECT id, title AS Title, salary AS Salary, department_id AS Department FROM roles`;
                 db.query(sql, (err, results) => {
                     console.table(results);
                 });
             }
             if (response.action == 'View All Employees') {
-                const sql = `SELECT * FROM employees`;
+                const sql = `SELECT employees.id, employees.first_name AS First, employees.last_name AS Last, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees INNER JOIN roles ON roles.id = employees.role_id INNER JOIN departments ON departments.id = roles.department_id`;
                 db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
                     console.table(results);
                 });
             }
@@ -149,21 +152,6 @@ prompting()
 //     });
 // });
 
-// See all roles
-// app.get('/api/movies', (req, res) => {
-//     const sql = `SELECT id, movie_name AS title FROM movies`;
-
-//     db.query(sql, (err, rows) => {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: 'success',
-//             data: rows
-//         });
-//     });
-// });
 
 // Delete a movie
 // app.delete('/api/movie/:id', (req, res) => {
