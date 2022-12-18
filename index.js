@@ -1,28 +1,8 @@
-// const Game = require("./lib/Game");
-
-// Initialize a new Game object
-// const game = new Game();
-
-// Start playing
-// game.play();
-
-const express = require('express');
 const sequelize = require('./config/connection');
 const mysql = require('mysql2');
 const inquirer = require("inquirer");
 const cTable = require('console.table')
 
-// const app = express();
-// const PORT = process.env.PORT || 3001;
-
-// Express middleware
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
-
-// Force true to drop/recreate table(s) on every sync
-// sequelize.sync({ force: true }).then(() => {
-//   app.listen(PORT, () => console.log('Now listening'));
-// });
 
 // Connect to database
 const db = mysql.createConnection(
@@ -50,23 +30,6 @@ require('dotenv').config();
 //         port: 3306
 //     }
 // );
-// Add an employee
-// app.post('/api/new-movie', ({ body }, res) => {
-//     const sql = `INSERT INTO movies (movie_name)
-//     VALUES (?)`;
-//     const params = [body.movie_name];
-
-//     db.query(sql, params, (err, result) => {
-//         if (err) {
-//             res.status(400).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: 'success',
-//             data: body
-//         });
-//     });
-// });
 
 function prompting() {
     inquirer
@@ -125,7 +88,7 @@ function prompting() {
                     console.table(results);
                 });
             }
-            if (response.action == 'Add Department') {
+            if (response.action == 'Add Role') {
                 inquirer
                     .prompt([
                         {
@@ -151,7 +114,7 @@ function prompting() {
                     })
                 }
             if (response.action == 'View All Employees') {
-                const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, CONCAT(m.first_name, ' ', m.last_name) AS Manager, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
+                const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, roles.title AS Title, roles.salary As Salary, departments.name AS Department, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
                 db.query(sql, (err, results) => {
                     if (err) {
                         console.log(err)
