@@ -68,23 +68,6 @@ require('dotenv').config();
 //     });
 // });
 
-// See all employees
-// app.get('/api/movies', (req, res) => {
-//     const sql = `SELECT id, movie_name AS title FROM movies`;
-
-//     db.query(sql, (err, rows) => {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: 'success',
-//             data: rows
-//         });
-//     });
-// });
-
-// See all departments
 function prompting() {
     inquirer
         .prompt([
@@ -111,12 +94,62 @@ function prompting() {
                     console.table(results);
                 });
             }
+            if (response.action == 'Add Department') {
+                inquirer
+                    .prompt([
+                        {
+                            type: 'input',
+                            message: 'What is the Department ID?',
+                            name: 'DeptID',
+                        },
+                        {
+                            type: 'input',
+                            message: 'What is the Department Name?',
+                            name: 'DeptName',
+                        }
+                    ])
+                    .then((answer) => {
+                        const sql = `INSERT INTO departments (id, name) VALUES (${answer.DeptID}, "${answer.DeptName}")`;
+
+                        db.query(sql, (err, results) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                            console.log(`${answer.DeptName} Department added to the Company Database with the Department ID of ${answer.DeptID}.`);
+                        });
+                    })
+            }
             if (response.action == 'View All Roles') {
                 const sql = `SELECT id, title AS Title, salary AS Salary, department_id AS Department FROM roles`;
                 db.query(sql, (err, results) => {
                     console.table(results);
                 });
             }
+            if (response.action == 'Add Department') {
+                inquirer
+                    .prompt([
+                        {
+                            type: 'input',
+                            message: 'What is the Department ID?',
+                            name: 'DeptID',
+                        },
+                        {
+                            type: 'input',
+                            message: 'What is the Department Name?',
+                            name: 'DeptName',
+                        }
+                    ])
+                    .then((answer) => { 
+                        const sql = `INSERT INTO departments (id, name) VALUES (${answer.DeptID}, "${answer.DeptName}")`;
+
+                        db.query(sql, (err, results) => {
+                            if (err) {
+                                console.log(err)
+                            }
+                            console.log(`${answer.DeptName} Department added to the Company Database with the Department ID of ${answer.DeptID}.`);
+                        });
+                    })
+                }
             if (response.action == 'View All Employees') {
                 const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, CONCAT(m.first_name, ' ', m.last_name) AS Manager, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
                 db.query(sql, (err, results) => {
@@ -126,8 +159,8 @@ function prompting() {
                     console.table(results);
                 });
             }
-            if (response.action == 'Exit App') {
-                console.log("Press Ctrl c")
+            if (response.action == 'Exit') {
+                console.log("Press Ctrl c to exit")
             }
         })
     // .then((response) => {
