@@ -4,15 +4,23 @@ const mysql = require('mysql2');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
+    
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// Force true to drop/recreate table(s) on every sync
-sequelize.sync({ force: true }).then(() => {
-  app.listen(PORT, () => console.log('Now listening'));
-});
+// Connect to database
+const db = mysql.createConnection(
+  {
+    host: DB_NAME,
+    // MySQL username,
+    user: DB_PASSWORD,
+    // TODO: Add MySQL password here
+    password: '',
+    database: 'movies_db'
+  },
+  console.log(`Connected to the movies_db database.`)
+);
 
 // Create a movie
 app.post('/api/new-movie', ({ body }, res) => {
