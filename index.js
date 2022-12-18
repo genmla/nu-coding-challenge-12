@@ -118,7 +118,7 @@ function prompting() {
                 });
             }
             if (response.action == 'View All Employees') {
-                const sql = `SELECT employees.id, employees.first_name AS First, employees.last_name AS Last, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees INNER JOIN roles ON roles.id = employees.role_id INNER JOIN departments ON departments.id = roles.department_id`;
+                const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, CONCAT(m.first_name, ' ', m.last_name) AS Manager, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
                 db.query(sql, (err, results) => {
                     if (err) {
                         console.log(err)
