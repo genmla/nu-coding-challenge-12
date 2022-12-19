@@ -3,39 +3,198 @@ const mysql = require('mysql2');
 const inquirer = require("inquirer");
 const cTable = require('console.table')
 
-
 // Connect to database
 const db = mysql.createConnection(
     {
         host: 'localhost',
-        // MySQL username,
         user: process.env.DB_USER,
-        // TODO: Add MySQL password here
         password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME
-    },
-    console.log(`Connected to the movies_db database.`)
-);
+        database: process.env.DB_NAME,
+    });
 
 const Sequelize = require('sequelize');
 require('dotenv').config();
 
-// const sequelize = new Sequelize(
-//     process.env.DB_NAME,
-//     process.env.DB_USER,
-//     process.env.DB_PASSWORD,
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql',
-//         port: 3306
-//     }
-// );
+function viewAllDepts() {
+    const sql = `SELECT id, name AS Department FROM departments`;
+
+    db.query(sql, (err, results) => {
+        console.table(results);
+        prompting();
+    });
+}
+
+function addDept() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'What is the department ID?',
+                name: 'DeptID',
+            },
+            {
+                type: 'input',
+                message: 'What is the department name?',
+                name: 'DeptName',
+            }
+        ])
+        .then((answer) => {
+            const sql = `INSERT INTO departments (id, name) VALUES (${answer.DeptID}, "${answer.DeptName}")`;
+
+            db.query(sql, (err, results) => {
+                if (err) {
+                    console.log(err)
+                }
+                console.log(`${answer.DeptName} Department added to the Company Database with the Department ID of ${answer.DeptID}.`);
+                prompting();
+            });
+        })
+}
+
+function viewAllRoles() {
+    const sql = `SELECT id, title AS Title, salary AS Salary, department_id AS Department FROM roles`;
+    db.query(sql, (err, results) => {
+        console.table(results);
+        prompting();
+    });
+}
+
+function addRole() {
+    const sql = `SELECT id, name FROM departments`;
+    db.query(sql, (err, results) => {
+        let choices = [];
+        for (let i = 0; i < results.length; i++) {
+            choices.push(results[i].id + " " + results[i].name);
+        }
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    message: 'What is the role ID?',
+                    name: 'RoleID',
+                },
+                {
+                    type: 'input',
+                    message: 'What is the role title?',
+                    name: 'roleTitle',
+                },
+                {
+                    type: 'input',
+                    message: 'What is the role salary?',
+                    name: 'roleSalary',
+                },
+                {
+                    message: 'To what department does this role belong?',
+                    name: 'roleDept',
+                    type: 'list',
+                    choices: choices
+                }
+            ])
+            .then((answer) => {
+                const arr = answer.roleDept.split(" ");
+                const roleDeptID = parseInt(arr[0]);
+                const sql = `INSERT INTO roles (id, title, salary, department_id) VALUES (${answer.RoleID}, "${answer.roleTitle}", ${answer.roleSalary}, ${roleDeptID})`;
+
+                db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    console.log(`The ${answer.roleTitle} role was added to the Company Database.`);
+                    prompting();
+                });
+            })
+    })
+}
+
+function viewAllEmployees() {
+    const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, roles.title AS Title, roles.salary As Salary, departments.name AS Department, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err)
+        }
+        console.table(results);
+        prompting();
+    });
+}
+
+function addEmployee() {
+    const sql = `SELECT * from roles`;
+    db.query(sql, (err, results) => {
+        let roleSelction = results.map(function (roles) {
+            let roleSelected = {
+                name: roles.title,
+                value: roles.id
+            }
+            return roleSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    message: `What is the employee's ID?`,
+                    name: 'empID',
+                },
+                {
+                    type: 'input',
+                    message: `What is the employee's first name?`,
+                    name: 'empFirst',
+                },
+                {
+                    type: 'input',
+                    message: `What is the employee's last name?`,
+                    name: 'empLast',
+                },
+                {
+                    message: `What is the employee's role? Please slect the appropriate id`,
+                    name: 'empRole',
+                    type: 'list',
+                    choices: roleSelction
+                }
+            ])
+            .then(function (answer) {
+                const sql = 'SELECT * from employees';
+                db.query(sql, (err, results) => {
+                    let manSelection = results.map(function (employees) {
+                        let manSelected = {
+                            name: employees.first_name + " " + employees.last_name,
+                            value: employees.id
+                        }
+                        return manSelected;
+                    })
+                    inquirer
+                        .prompt([
+                            {
+                                message: `Who is the employee manager?`,
+                                name: 'empMan',
+                                type: 'list',
+                                choices: manSelection
+                            }
+                        ])
+                        .then (function (manAnswer) {
+                            const sql = `INSERT INTO employees (id, first_name, last_name, role_id, manager_id) VALUES (${answer.empID}, "${answer.empFirst}", "${answer.empLast}", ${answer.empRole}, ${manAnswer.empMan})`;
+
+                            db.query(sql, (err, results) => {
+                                if (err) {
+                                    console.log(err)
+                                }
+                                console.log(`${answer.empFirst} ${answer.empLast} was added to the Company Database.`);
+                                prompting();
+                            });
+                        })                    
+                })
+            })
+    })
+};
+
+function updateEmployeeRole() {
+    const sql = `UPDATE reviews SET review = ? WHERE id`
+}
 
 function prompting() {
     inquirer
         .prompt([
             {
-                type: 'checkbox',
+                type: 'list',
                 message: 'What would you like to do?',
                 name: 'action',
                 choices:
@@ -46,173 +205,35 @@ function prompting() {
                         'Add Role',
                         'View All Departments',
                         'Add Department',
-                        'Exit App']
+                        'Exit']
             },
         ])
         .then((response) => {
             if (response.action == 'View All Departments') {
-                const sql = `SELECT id, name AS Department FROM departments`;
-
-                db.query(sql, (err, results) => {
-                    console.table(results);
-                });
+                viewAllDepts();
             }
             if (response.action == 'Add Department') {
-                inquirer
-                    .prompt([
-                        {
-                            type: 'input',
-                            message: 'What is the Department ID?',
-                            name: 'DeptID',
-                        },
-                        {
-                            type: 'input',
-                            message: 'What is the Department Name?',
-                            name: 'DeptName',
-                        }
-                    ])
-                    .then((answer) => {
-                        const sql = `INSERT INTO departments (id, name) VALUES (${answer.DeptID}, "${answer.DeptName}")`;
-
-                        db.query(sql, (err, results) => {
-                            if (err) {
-                                console.log(err)
-                            }
-                            console.log(`${answer.DeptName} Department added to the Company Database with the Department ID of ${answer.DeptID}.`);
-                        });
-                    })
+                addDept();
             }
             if (response.action == 'View All Roles') {
-                const sql = `SELECT id, title AS Title, salary AS Salary, department_id AS Department FROM roles`;
-                db.query(sql, (err, results) => {
-                    console.table(results);
-                });
+                viewAllRoles();
             }
             if (response.action == 'Add Role') {
-                inquirer
-                    .prompt([
-                        {
-                            type: 'input',
-                            message: 'What is the Department ID?',
-                            name: 'DeptID',
-                        },
-                        {
-                            type: 'input',
-                            message: 'What is the Department Name?',
-                            name: 'DeptName',
-                        }
-                    ])
-                    .then((answer) => { 
-                        const sql = `INSERT INTO departments (id, name) VALUES (${answer.DeptID}, "${answer.DeptName}")`;
-
-                        db.query(sql, (err, results) => {
-                            if (err) {
-                                console.log(err)
-                            }
-                            console.log(`${answer.DeptName} Department added to the Company Database with the Department ID of ${answer.DeptID}.`);
-                        });
-                    })
-                }
+                addRole();
+            }
             if (response.action == 'View All Employees') {
-                const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, roles.title AS Title, roles.salary As Salary, departments.name AS Department, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY departments.id, Manager`;
-                db.query(sql, (err, results) => {
-                    if (err) {
-                        console.log(err)
-                    }
-                    console.table(results);
-                });
+                viewAllEmployees();
+            }
+            if (response.action == 'Add Employee') {
+                addEmployee();
+            }
+            if (response.action == 'Update Employee Role') {
+                ();
             }
             if (response.action == 'Exit') {
                 console.log("Press Ctrl c to exit")
             }
         })
-    // .then((response) => {
-    //     return prompting()
-    // })
 }
 
 prompting()
-
-// app.get('/api/movies', (req, res) => {
-//     const sql = `SELECT id, movie_name AS title FROM movies`;
-
-//     db.query(sql, (err, rows) => {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: 'success',
-//             data: rows
-//         });
-//     });
-// });
-
-
-// Delete a movie
-// app.delete('/api/movie/:id', (req, res) => {
-//     const sql = `DELETE FROM movies WHERE id = ?`;
-//     const params = [req.params.id];
-
-//     db.query(sql, params, (err, result) => {
-//         if (err) {
-//             res.statusMessage(400).json({ error: res.message });
-//         } else if (!result.affectedRows) {
-//             res.json({
-//                 message: 'Movie not found'
-//             });
-//         } else {
-//             res.json({
-//                 message: 'deleted',
-//                 changes: result.affectedRows,
-//                 id: req.params.id
-//             });
-//         }
-//     });
-// });
-
-// Read list of all reviews and associated movie name using LEFT JOIN
-// app.get('/api/movie-reviews', (req, res) => {
-//     const sql = `SELECT movies.movie_name AS movie, reviews.review FROM reviews LEFT JOIN movies ON reviews.movie_id = movies.id ORDER BY movies.movie_name;`;
-//     db.query(sql, (err, rows) => {
-//         if (err) {
-//             res.status(500).json({ error: err.message });
-//             return;
-//         }
-//         res.json({
-//             message: 'success',
-//             data: rows
-//         });
-//     });
-// });
-
-// BONUS: Update review name
-// app.put('/api/review/:id', (req, res) => {
-//     const sql = `UPDATE reviews SET review = ? WHERE id = ?`;
-//     const params = [req.body.review, req.params.id];
-
-//     db.query(sql, params, (err, result) => {
-//         if (err) {
-//             res.status(400).json({ error: err.message });
-//         } else if (!result.affectedRows) {
-//             res.json({
-//                 message: 'Movie not found'
-//             });
-//         } else {
-//             res.json({
-//                 message: 'success',
-//                 data: req.body,
-//                 changes: result.affectedRows
-//             });
-//         }
-//     });
-// });
-
-// Default response for any other request (Not Found)
-// app.use((req, res) => {
-//     res.status(404).end();
-// });
-
-// app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-// });
