@@ -132,8 +132,14 @@ function orderAllEmployeesByDept() {
         if (err) {
             console.log(err)
         }
-        console.table(results);
-        prompting();
+        else {
+            const sql =
+                db.query(sql, (err, results) => {
+                    console.table(results);
+                    prompting();
+                })
+        }
+
     });
 }
 
@@ -157,13 +163,19 @@ function viewEmployeesByManager() {
                 }
             ])
             .then(function (answer) {
-                const sql = `CREATE OR REPLACE VIEW ManagerView AS SELECT CONCAT(first_name, " ", last_name) AS Employees FROM employees WHERE manager_id = ${answer.manager}; SELECT * FROM ManagerView`;
+                const sql = `CREATE OR REPLACE VIEW ManagerView AS SELECT CONCAT(first_name, " ", last_name) AS Employees FROM employees WHERE manager_id = ${answer.manager}`;
                 db.query(sql, (err, results) => {
                     if (err) {
                         console.log(err)
                     }
-                    console.table(results);
-                    prompting();
+                    else {
+                        const sql = `SELECT * FROM ManagerView`;
+                        db.query(sql, (err, results) => {
+                            console.table(results);
+                            prompting();
+                        })
+                    }
+
                 });
             })
     })
