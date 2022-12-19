@@ -24,3 +24,5 @@ ON m.id = e.manager_id
 SELECT employees.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, CONCAT(m.first_name, ' ', m.last_name) AS Manager, roles.title AS Title, employees.manager_id AS Manager, roles.salary As Salary, departments.name AS Department FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = employees.role_id INNER JOIN departments ON departments.id = roles.department_id;
 
 SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, CONCAT(m.first_name, ' ', m.last_name) AS Manager, roles.title AS Title, roles.salary As Salary, departments.name AS Department FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id;
+
+CREATE OR REPLACE VIEW ManagerView AS SELECT CONCAT(first_name, " ", last_name) AS Employees FROM employees WHERE manager_id = 2; SELECT * FROM ManagerView
