@@ -1,7 +1,8 @@
 const sequelize = require('./config/connection');
 const mysql = require('mysql2');
 const inquirer = require("inquirer");
-const cTable = require('console.table')
+require('console.table')
+require('dotenv').config();
 
 // Connect to database
 const db = mysql.createConnection(
@@ -11,9 +12,6 @@ const db = mysql.createConnection(
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
     });
-
-const Sequelize = require('sequelize');
-require('dotenv').config();
 
 function viewAllDepts() {
     const sql = `SELECT id, name AS Department FROM departments`;
@@ -170,7 +168,7 @@ function addEmployee() {
                                 choices: manSelection
                             }
                         ])
-                        .then (function (manAnswer) {
+                        .then(function (manAnswer) {
                             const sql = `INSERT INTO employees (id, first_name, last_name, role_id, manager_id) VALUES (${answer.empID}, "${answer.empFirst}", "${answer.empLast}", ${answer.empRole}, ${manAnswer.empMan})`;
 
                             db.query(sql, (err, results) => {
@@ -180,14 +178,64 @@ function addEmployee() {
                                 console.log(`${answer.empFirst} ${answer.empLast} was added to the Company Database.`);
                                 prompting();
                             });
-                        })                    
+                        })
                 })
             })
     })
 };
 
 function updateEmployeeRole() {
-    const sql = `UPDATE reviews SET review = ? WHERE id`
+    const sql = 'SELECT * from employees';
+    db.query(sql, (err, results) => {
+        let empSelection = results.map(function (employees) {
+            let empSelected = {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+            return empSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which employee's role do you want to update?`,
+                    name: 'employee',
+                    type: 'list',
+                    choices: empSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = `SELECT * from roles`;
+                db.query(sql, (err, results) => {
+                    let roleSelction = results.map(function (roles) {
+                        let roleSelected = {
+                            name: roles.title,
+                            value: roles.id
+                        }
+                        return roleSelected;
+                    })
+                    inquirer
+                        .prompt([
+                            {
+                                message: `What is the employee's new role?`,
+                                name: 'newRole',
+                                type: 'list',
+                                choices: roleSelction
+                            }
+                        ])
+                        .then(function (roleAnswer) {
+                            const sql = `UPDATE employees SET role_id = ${roleAnswer.newRole} WHERE id = ${answer.employee}`;
+
+                            db.query(sql, (err, results) => {
+                                if (err) {
+                                    console.log(err)
+                                }
+                                console.log(`Role updated in the Company Database.`);
+                                prompting();
+                            });
+                        })
+                })
+            })
+    })
 }
 
 function prompting() {
@@ -228,7 +276,7 @@ function prompting() {
                 addEmployee();
             }
             if (response.action == 'Update Employee Role') {
-                ();
+                updateEmployeeRole();
             }
             if (response.action == 'Exit') {
                 console.log("Press Ctrl c to exit")
