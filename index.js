@@ -115,6 +115,71 @@ function viewAllEmployees() {
     });
 }
 
+function orderAllEmployeesByManager() {
+    const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, roles.title AS Title, roles.salary As Salary, departments.name AS Department, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY Manager`;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err)
+        }
+        console.table(results);
+        prompting();
+    });
+}
+
+function orderAllEmployeesByDept() {
+    const sql = `SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, roles.title AS Title, roles.salary As Salary, departments.name AS Department, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees e LEFT JOIN employees m ON m.id = e.manager_id INNER JOIN roles ON roles.id = e.role_id INNER JOIN departments ON departments.id = roles.department_id ORDER BY Department`;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            const sql =
+                db.query(sql, (err, results) => {
+                    console.table(results);
+                    prompting();
+                })
+        }
+
+    });
+}
+
+function viewEmployeesByManager() {
+    const sql = 'SELECT * from employees';
+    db.query(sql, (err, results) => {
+        let empSelection = results.map(function (employees) {
+            let empSelected = {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+            return empSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which manager's direct reports do you want to view?`,
+                    name: 'manager',
+                    type: 'list',
+                    choices: empSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = `CREATE OR REPLACE VIEW ManagerView AS SELECT CONCAT(first_name, " ", last_name) AS Employees FROM employees WHERE manager_id = ${answer.manager}`;
+                db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    else {
+                        const sql = `SELECT * FROM ManagerView`;
+                        db.query(sql, (err, results) => {
+                            console.table(results);
+                            prompting();
+                        })
+                    }
+
+                });
+            })
+    })
+}
 function addEmployee() {
     const sql = `SELECT * from roles`;
     db.query(sql, (err, results) => {
@@ -397,6 +462,7 @@ function prompting() {
                 name: 'action',
                 choices:
                     ['View All Employees',
+                        'View All Employees by Manager',
                         'Add Employee',
                         'Update Employee Role',
                         'Update Employee Manager',
@@ -431,6 +497,9 @@ function prompting() {
             }
             if (response.action == 'View All Employees') {
                 viewAllEmployees();
+            }
+            if (response.action == 'View All Employees by Manager') {
+                viewEmployeesByManager();
             }
             if (response.action == 'Add Employee') {
                 addEmployee();
