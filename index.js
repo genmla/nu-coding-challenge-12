@@ -238,6 +238,156 @@ function updateEmployeeRole() {
     })
 }
 
+function updateEmployeeManager() {
+    const sql = 'SELECT * from employees';
+    db.query(sql, (err, results) => {
+        let empSelection = results.map(function (employees) {
+            let empSelected = {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+            return empSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which employee's manager do you want to update?`,
+                    name: 'employee',
+                    type: 'list',
+                    choices: empSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = 'SELECT * from employees';
+                db.query(sql, (err, results) => {
+                    let manSelection = results.map(function (employees) {
+                        let manSelected = {
+                            name: employees.first_name + " " + employees.last_name,
+                            value: employees.id
+                        }
+                        return manSelected;
+                    })
+                    inquirer
+                        .prompt([
+                            {
+                                message: `Who is the employee's new manager?`,
+                                name: 'newManager',
+                                type: 'list',
+                                choices: manSelection
+                            }
+                        ])
+                        .then(function (manAnswer) {
+                            const sql = `UPDATE employees SET manager_id = ${manAnswer.newManager} WHERE id = ${answer.employee}`;
+
+                            db.query(sql, (err, results) => {
+                                if (err) {
+                                    console.log(err)
+                                }
+                                console.log(`Manager updated in the Company Database.`);
+                                prompting();
+                            });
+                        })
+                })
+            })
+    })
+}
+
+function deleteEmployee() {
+    const sql = 'SELECT * from employees';
+    db.query(sql, (err, results) => {
+        let empSelection = results.map(function (employees) {
+            let empSelected = {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+            return empSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which employee do you want to delete?`,
+                    name: 'employee',
+                    type: 'list',
+                    choices: empSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = `DELETE FROM employees WHERE id = ${answer.employee}`
+                db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    console.log(`Employee deleted from the Company Database.`);
+                    prompting();
+                });
+            })
+    })
+}
+
+function deleteRole() {
+    const sql = 'SELECT * from roles';
+    db.query(sql, (err, results) => {
+        let roleSelection = results.map(function (roles) {
+            let roleSelected = {
+                name: roles.title,
+                value: roles.id
+            }
+            return roleSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which role do you want to delete?`,
+                    name: 'role',
+                    type: 'list',
+                    choices: roleSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = `DELETE FROM roles WHERE id = ${answer.role}`
+                db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    console.log(`Role deleted from the Company Database.`);
+                    prompting();
+                });
+            })
+    })
+}
+
+function deleteDept() {
+    const sql = 'SELECT * from departments';
+    db.query(sql, (err, results) => {
+        let deptSelection = results.map(function (departments) {
+            let deptSelected = {
+                name: departments.name,
+                value: departments.id
+            }
+            return deptSelected;
+        })
+        inquirer
+            .prompt([
+                {
+                    message: `Which department do you want to delete?`,
+                    name: 'department',
+                    type: 'list',
+                    choices: deptSelection
+                }
+            ])
+            .then(function (answer) {
+                const sql = `DELETE FROM departments WHERE id = ${answer.department}`
+                db.query(sql, (err, results) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    console.log(`Department deleted from the Company Database.`);
+                    prompting();
+                });
+            })
+    })
+}
+
 function prompting() {
     inquirer
         .prompt([
@@ -249,10 +399,14 @@ function prompting() {
                     ['View All Employees',
                         'Add Employee',
                         'Update Employee Role',
+                        'Update Employee Manager',
+                        'Delete Employee',
                         'View All Roles',
                         'Add Role',
+                        'Delete Role',
                         'View All Departments',
                         'Add Department',
+                        'Delete Department',
                         'Exit']
             },
         ])
@@ -263,11 +417,17 @@ function prompting() {
             if (response.action == 'Add Department') {
                 addDept();
             }
+            if (response.action == 'Delete Department') {
+                deleteDept();
+            }
             if (response.action == 'View All Roles') {
                 viewAllRoles();
             }
             if (response.action == 'Add Role') {
                 addRole();
+            }
+            if (response.action == 'Delete Role') {
+                deleteRole();
             }
             if (response.action == 'View All Employees') {
                 viewAllEmployees();
@@ -278,8 +438,14 @@ function prompting() {
             if (response.action == 'Update Employee Role') {
                 updateEmployeeRole();
             }
+            if (response.action == 'Update Employee Manager') {
+                updateEmployeeManager();
+            }
+            if (response.action == 'Delete Employee') {
+                deleteEmployee();
+            }
             if (response.action == 'Exit') {
-                console.log("Press Ctrl c to exit")
+                console.log("Press Ctrl c to exit");
             }
         })
 }
