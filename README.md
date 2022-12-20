@@ -26,21 +26,31 @@ The user will need to run node index.js from their command line in order to read
 
 The user can perform the following in the command line applicaiton to create, read, update, and delete data from the company database: 
 
-    View All Employees
-    View All Employees by Manager
-    View All Employees by Department
-    Add Employee
-    Update Employee Role
-    Update Employee Manager
-    Delete Employee
-    View All Roles
-    Add Role
-    Delete Role
-    View All Departments
-    Add Department
-    Delete Department
+    View All Employees - allows the user to view all employees in the database with the employee id, name, title, salary, department, and manager indicated
 
-To add a screenshot, create an `assets/images` folder in your repository and upload your screenshot to it. Then, using the relative file path, add it to your README using the following syntax:
+    View All Employees by Manager - allows the user to view all employees under a selected manager
+
+    View All Employees by Department - allows the user to view all employees within a selected department
+
+    Add Employee - allows the user to add an employee to the database, specifying the id, first name, last name, role and manager
+
+    Update Employee Role - allows the user to update a role of an employee in the database
+
+    Update Employee Manager - allows the user to update a manager of an employee in the database
+
+    Delete Employee - allows the user to remove an employee in the database
+
+    View All Roles - allows the user to view all roles within the database
+
+    Add Role - allows the user to add a role to the database
+
+    Delete Role - allows the user to remove a role from the database
+
+    View All Departments - allows the user to view all departments in the database
+
+    Add Department - allows the user to add a department to the database
+
+    Delete Department - allows the user to remove a department from the database
 
 [Video Demonstration](https://drive.google.com/file/d/18b2W2w2L6ac8MLZB3fiGFlIzU992SfpN/view)
 
