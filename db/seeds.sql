@@ -20,6 +20,9 @@ VALUES (1, "Leslie", "Schubert", 6, null),
        (4, "Dorothea", "Vernon", 8, 1),
        (5, "Sarah", "Halley", 2, 2),
        (6, "Gillian", "Boolean", 1, 5),
-       (7, "Shelly", "Marmalde", 4, 3),
-       (8, "Jacob", "Jonjingle", 7, 4);
+       (7, "Jonny", "Friday", 1, 5),
+       (8, "Shelly", "Marmalde", 4, 3),
+       (9, "Cody", "Keyboard", 4, 3),
+       (10, "Jacob", "Jonjingle", 7, 4),
+       (11, "Annabell", "Darling", 7, 4);
         
